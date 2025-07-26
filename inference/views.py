@@ -3,8 +3,8 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .models import Player, NightCheck, DeathEvent, Judgment, PoliceIdentity, WerewolfProbabilityAdjustment
-from .forms import NightCheckForm, DeathEventForm, JudgmentForm, PlayerForm, PoliceIdentityForm, WerewolfProbabilityAdjustmentForm
+from .models import Player, NightCheck, DeathEvent, Judgment, PoliceIdentity, WerewolfProbabilityAdjustment, OppositionGroup
+from .forms import NightCheckForm, DeathEventForm, JudgmentForm, PlayerForm, PoliceIdentityForm, WerewolfProbabilityAdjustmentForm, OppositionGroupForm
 from .logic_engine import compare_scenarios, analyze_solutions, get_recommendations, compare_scenarios_with_police_identity, apply_werewolf_probability_adjustments
 import json
 
@@ -16,6 +16,7 @@ def index(request):
     death_events = DeathEvent.objects.all()
     judgments = Judgment.objects.all()
     werewolf_adjustments = WerewolfProbabilityAdjustment.objects.all()
+    opposition_groups = OppositionGroup.objects.all()
     
     # 获取警察身份设置
     police_identity = PoliceIdentity.objects.first()
@@ -86,6 +87,7 @@ def index(request):
         'death_events': death_events,
         'judgments': judgments,
         'werewolf_adjustments': werewolf_adjustments,
+        'opposition_groups': opposition_groups,
         'police_identity': police_identity,
         'results': results,
         'analysis_A': analysis_A,
@@ -287,6 +289,7 @@ def initialize_and_clear_data(request):
         DeathEvent.objects.all().delete()
         Judgment.objects.all().delete()
         WerewolfProbabilityAdjustment.objects.all().delete()
+        OppositionGroup.objects.all().delete()
         Player.objects.all().delete()
         PoliceIdentity.objects.all().delete()
         messages.success(request, '所有数据已初始化并清空！游戏可以重新开始。')
@@ -306,3 +309,16 @@ def add_werewolf_probability(request):
         form = WerewolfProbabilityAdjustmentForm()
     
     return render(request, 'inference/add_werewolf_probability.html', {'form': form})
+
+def add_opposition_group(request):
+    """添加对立组合"""
+    if request.method == 'POST':
+        form = OppositionGroupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '对立组合已保存！')
+            return redirect('index')
+    else:
+        form = OppositionGroupForm()
+    
+    return render(request, 'inference/add_opposition_group.html', {'form': form})

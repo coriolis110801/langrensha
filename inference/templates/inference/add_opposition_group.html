@@ -1,0 +1,54 @@
+{% extends 'inference/base.html' %}
+
+{% block title %}添加对立组合 - 狼人杀推理助手{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-users-slash"></i> 添加对立组合
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">组合名称</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="text-danger">{{ form.name.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">给这个对立组合起一个名字，便于识别</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.players.id_for_label }}" class="form-label">选择对立玩家</label>
+                        {{ form.players }}
+                        {% if form.players.errors %}
+                            <div class="text-danger">{{ form.players.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">按住Ctrl键可以选择多个玩家，至少选择2个玩家</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.reason.id_for_label }}" class="form-label">对立原因（可选）</label>
+                        {{ form.reason }}
+                        {% if form.reason.errors %}
+                            <div class="text-danger">{{ form.reason.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">说明这些玩家为什么是对立的，例如：发言互相攻击、投票对立等</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-save"></i> 保存组合
+                        </button>
+                        <a href="{% url 'index' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

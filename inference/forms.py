@@ -1,5 +1,5 @@
 from django import forms
-from .models import NightCheck, DeathEvent, Judgment, Player, PoliceIdentity, WerewolfProbabilityAdjustment
+from .models import NightCheck, DeathEvent, Judgment, Player, PoliceIdentity, WerewolfProbabilityAdjustment, OppositionGroup
 
 class NightCheckForm(forms.ModelForm):
     class Meta:
@@ -118,3 +118,36 @@ class WerewolfProbabilityAdjustmentForm(forms.ModelForm):
                 'placeholder': '请输入增加匪徒概率的原因'
             }),
         } 
+
+class OppositionGroupForm(forms.ModelForm):
+    class Meta:
+        model = OppositionGroup
+        fields = ['name', 'players', 'reason']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '例如：5号10号对立组合'
+            }),
+            'players': forms.SelectMultiple(attrs={
+                'class': 'form-control',
+                'size': '8'
+            }),
+            'reason': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': '请说明这些玩家为什么是对立的（可选）'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # 设置players字段为必填
+        self.fields['players'].required = True
+        # 设置最小选择数量为2
+        self.fields['players'].help_text = "请至少选择2个玩家"
+    
+    def clean_players(self):
+        players = self.cleaned_data.get('players')
+        if players and len(players) < 2:
+            raise forms.ValidationError("对立组合至少需要2个玩家")
+        return players 

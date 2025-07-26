@@ -110,3 +110,23 @@ class WerewolfProbabilityAdjustment(models.Model):
     
     def __str__(self):
         return f"{self.player}增加匪徒概率{self.probability_increase}% - {self.reason[:20]}..."
+
+class OppositionGroup(models.Model):
+    """对立组合模型"""
+    name = models.CharField(max_length=100, verbose_name="组合名称")
+    players = models.ManyToManyField(Player, verbose_name="对立玩家")
+    reason = models.TextField(blank=True, verbose_name="对立原因")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "对立组合"
+        verbose_name_plural = "对立组合"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        player_numbers = [str(player.number) for player in self.players.all()]
+        return f"{self.name} ({', '.join(player_numbers)}号)"
+    
+    def get_player_numbers(self):
+        """获取玩家编号列表"""
+        return [player.number for player in self.players.all().order_by('number')]

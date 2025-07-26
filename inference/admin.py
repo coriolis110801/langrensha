@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Player, NightCheck, DeathEvent, Judgment, PoliceIdentity, WerewolfProbabilityAdjustment
+from .models import Player, NightCheck, DeathEvent, Judgment, PoliceIdentity, WerewolfProbabilityAdjustment, OppositionGroup
 
 # Register your models here.
 @admin.register(Player)
@@ -40,3 +40,15 @@ class WerewolfProbabilityAdjustmentAdmin(admin.ModelAdmin):
     list_filter = ['probability_increase']
     search_fields = ['player__number', 'player__nickname', 'reason']
     ordering = ['-created_at']
+
+@admin.register(OppositionGroup)
+class OppositionGroupAdmin(admin.ModelAdmin):
+    list_display = ['name', 'get_players', 'reason', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['name', 'reason', 'players__number', 'players__nickname']
+    ordering = ['-created_at']
+    filter_horizontal = ['players']
+    
+    def get_players(self, obj):
+        return ", ".join([f"{player.number}号" for player in obj.players.all()])
+    get_players.short_description = "对立玩家"
