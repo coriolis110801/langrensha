@@ -1,0 +1,489 @@
+{% extends 'inference/base.html' %}
+
+{% block title %}主页 - 狼人杀推理助手{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- 左侧：数据输入和显示 -->
+    <div class="col-md-8">
+        <!-- 快速操作按钮 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-plus-circle"></i> 快速操作
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{% url 'add_player' %}" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-user-plus"></i> 添加玩家
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <form method="post" action="{% url 'add_all_players' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success w-100 mb-2">
+                                <i class="fas fa-users"></i> 一键添加12个玩家
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'set_police_identity' %}" class="btn btn-info w-100 mb-2">
+                            <i class="fas fa-user-shield"></i> 设置警察身份
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'add_night_check' %}" class="btn btn-info w-100 mb-2">
+                            <i class="fas fa-search"></i> 夜晚查验
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'add_death_event' %}" class="btn btn-danger w-100 mb-2">
+                            <i class="fas fa-skull"></i> 死亡事件
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'add_judgment' %}" class="btn btn-warning w-100 mb-2">
+                            <i class="fas fa-brain"></i> 主观判断
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'add_werewolf_probability' %}" class="btn btn-dark w-100 mb-2">
+                            <i class="fas fa-chart-line"></i> 增加匪徒概率
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'initialize_and_clear_data' %}" class="btn btn-danger w-100 mb-2">
+                            <i class="fas fa-trash"></i> 初始化并清空所有数据
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 警察身份显示 -->
+        {% if police_identity %}
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-shield"></i> 当前警察身份设置
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>警察A：</strong>{{ police_identity.police_a }}号玩家
+                    </div>
+                    <div class="col-md-6">
+                        {% if police_identity.police_b %}
+                            <strong>警察B：</strong>{{ police_identity.police_b }}号玩家
+                        {% else %}
+                            <strong>警察B：</strong><span class="text-muted">暂未设置</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if not police_identity.police_b %}
+                <div class="mt-2">
+                    <small class="text-info">
+                        <i class="fas fa-info-circle"></i> 当前只设置了警察A，系统将认为警察A是真警察进行推理。
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> 警察身份未设置
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-warning">请先设置警察身份才能进行推理！</p>
+                <a href="{% url 'set_police_identity' %}" class="btn btn-warning">
+                    <i class="fas fa-user-shield"></i> 设置警察身份
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 玩家列表 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-users"></i> 玩家列表 ({{ players.count }}/12)
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if players %}
+                    <div class="row">
+                        {% for player in players %}
+                            <div class="col-md-2 col-4 mb-2">
+                                <div class="text-center p-2 border rounded">
+                                    <strong>{{ player.number }}号</strong>
+                                    {% if player.nickname %}
+                                        <br><small>{{ player.nickname }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">暂无玩家，请先添加玩家。</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 夜晚查验记录 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-search"></i> 夜晚查验记录
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if night_checks %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>第几夜</th>
+                                    <th>查验者</th>
+                                    <th>被查验者</th>
+                                    <th>查验结果</th>
+                                    <th>时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for check in night_checks %}
+                                    <tr>
+                                        <td>{{ check.night_number }}</td>
+                                        <td>{{ check.get_checker_display }}</td>
+                                        <td>{{ check.target }}</td>
+                                        <td>
+                                            {% if check.result == 'good' %}
+                                                <span class="badge bg-success">好人</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">匪徒</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ check.created_at|date:"m-d H:i" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">暂无夜晚查验记录。</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 死亡事件 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-skull"></i> 死亡事件
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if death_events %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>第几夜/天</th>
+                                    <th>死亡玩家</th>
+                                    <th>事件类型</th>
+                                    <th>时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for death in death_events %}
+                                    <tr>
+                                        <td>{{ death.night_number }}</td>
+                                        <td>{{ death.player }}</td>
+                                        <td>
+                                            {% if death.event_type == 'kill' %}
+                                                <span class="badge bg-danger">夜晚被杀</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">白天处决</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ death.created_at|date:"m-d H:i" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">暂无死亡事件。</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 主观判断 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-brain"></i> 主观判断
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if judgments %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>玩家</th>
+                                    <th>判断</th>
+                                    <th>理由</th>
+                                    <th>时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for judgment in judgments %}
+                                    <tr>
+                                        <td>{{ judgment.player }}</td>
+                                        <td>
+                                            {% if judgment.label == 'good' %}
+                                                <span class="badge bg-success">好人</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">匪徒</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ judgment.reason|truncatechars:30 }}</td>
+                                        <td>{{ judgment.created_at|date:"m-d H:i" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">暂无主观判断。</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 匪徒概率调整 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-line"></i> 匪徒概率调整
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if werewolf_adjustments %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>玩家</th>
+                                    <th>增加概率</th>
+                                    <th>原因</th>
+                                    <th>时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for adjustment in werewolf_adjustments %}
+                                    <tr>
+                                        <td>{{ adjustment.player }}</td>
+                                        <td>
+                                            <span class="badge bg-warning">+{{ adjustment.probability_increase }}%</span>
+                                        </td>
+                                        <td>{{ adjustment.reason|truncatechars:30 }}</td>
+                                        <td>{{ adjustment.created_at|date:"m-d H:i" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">暂无匪徒概率调整。</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧：推理结果 -->
+    <div class="col-md-4">
+        <!-- 推理建议 -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-lightbulb"></i> 推理建议
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recommendations %}
+                    {% for recommendation in recommendations %}
+                        <div class="recommendation">
+                            <i class="fas fa-info-circle"></i> {{ recommendation }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">暂无推理建议，请添加更多数据。</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 共同匪徒统计 -->
+        {% if analysis_A.mafia_probability and analysis_B.mafia_probability %}
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> 共同匪徒统计
+                </h5>
+            </div>
+            <div class="card-body">
+                <p><strong>无论假设A还是B谁是真警察，都是匪徒的玩家：</strong></p>
+                {% for player, prob_a in analysis_A.mafia_probability.items %}
+                    {% for player_b, prob_b in analysis_B.mafia_probability.items %}
+                        {% if player == player_b and prob_a > 0 and prob_b > 0 %}
+                            <div class="mb-1">
+                                <span class="badge {% if prob_a == 100 and prob_b == 100 %}bg-danger{% elif prob_a > 70 or prob_b > 70 %}bg-warning{% else %}bg-info{% endif %}">
+                                    {{ player }}号: A假设{{ prob_a }}% | B假设{{ prob_b }}%
+                                </span>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+                
+                <hr>
+                <p><strong>高度可疑玩家（两假设下匪徒概率都>50%）：</strong></p>
+                {% for player, prob_a in analysis_A.mafia_probability.items %}
+                    {% for player_b, prob_b in analysis_B.mafia_probability.items %}
+                        {% if player == player_b and prob_a > 50 and prob_b > 50 %}
+                            <span class="badge bg-warning me-1">{{ player }}号</span>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+                
+                <hr>
+                <p><strong>确定匪徒（两假设下匪徒概率都是100%）：</strong></p>
+                {% for player, prob_a in analysis_A.mafia_probability.items %}
+                    {% for player_b, prob_b in analysis_B.mafia_probability.items %}
+                        {% if player == player_b and prob_a == 100 and prob_b == 100 %}
+                            <span class="badge bg-danger me-1">{{ player }}号</span>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 假设A结果 -->
+        <div class="card">
+            <div class="card-header {% if not results.A %}bg-success text-white{% else %}bg-warning{% endif %}">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-shield"></i> 假设A是警察（{{ police_identity.police_a.number }}号）
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if results.A %}
+                    <p><strong>可行解数量：</strong>{{ results.A|length }}</p>
+                    {% if analysis_A.mafia_probability %}
+                        <h6>匪徒概率：</h6>
+                        {% for player, prob in analysis_A.mafia_probability.items %}
+                            <div class="mb-1">
+                                <span class="badge {% if prob > 70 %}bg-danger{% elif prob > 40 %}bg-warning{% else %}bg-success{% endif %}">
+                                    {{ player }}号: {{ prob }}%
+                                </span>
+                            </div>
+                        {% endfor %}
+                        <hr>
+                        <p><strong>可能匪徒数量：</strong>{{ analysis_A.mafia_probability|length }}人</p>
+                        <p><strong>确定匪徒：</strong>
+                            {% for player, prob in analysis_A.mafia_probability.items %}
+                                {% if prob == 100 %}
+                                    <span class="badge bg-danger">{{ player }}号</span>
+                                {% endif %}
+                            {% endfor %}
+                        </p>
+                    {% endif %}
+                {% else %}
+                    <p class="text-success"><strong>无可行解 → A是假警察！</strong></p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 假设B结果 -->
+        <div class="card">
+            <div class="card-header {% if not results.B %}bg-success text-white{% else %}bg-warning{% endif %}">
+                <h5 class="card-title mb-0">
+                    {% if police_identity.police_b %}
+                        <i class="fas fa-user-shield"></i> 假设B是警察（{{ police_identity.police_b.number }}号）
+                    {% else %}
+                        <i class="fas fa-user-shield"></i> 假设B是警察（暂未设置）
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if results.B %}
+                    <p><strong>可行解数量：</strong>{{ results.B|length }}</p>
+                    {% if analysis_B.mafia_probability %}
+                        <h6>匪徒概率：</h6>
+                        {% for player, prob in analysis_B.mafia_probability.items %}
+                            <div class="mb-1">
+                                <span class="badge {% if prob > 70 %}bg-danger{% elif prob > 40 %}bg-warning{% else %}bg-success{% endif %}">
+                                    {{ player }}号: {{ prob }}%
+                                </span>
+                            </div>
+                        {% endfor %}
+                        <hr>
+                        <p><strong>可能匪徒数量：</strong>{{ analysis_B.mafia_probability|length }}人</p>
+                        <p><strong>确定匪徒：</strong>
+                            {% for player, prob in analysis_B.mafia_probability.items %}
+                                {% if prob == 100 %}
+                                    <span class="badge bg-danger">{{ player }}号</span>
+                                {% endif %}
+                            {% endfor %}
+                        </p>
+                    {% endif %}
+                {% else %}
+                    {% if police_identity.police_b %}
+                        <p class="text-success"><strong>无可行解 → B是假警察！</strong></p>
+                    {% else %}
+                        <p class="text-muted"><strong>暂未设置警察B，无法进行假设B推理</strong></p>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 刷新按钮 -->
+        <div class="card">
+            <div class="card-body">
+                <button id="refreshBtn" class="btn btn-primary w-100">
+                    <i class="fas fa-sync-alt"></i> 刷新推理
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#refreshBtn').click(function() {
+        $.ajax({
+            url: '{% url "ajax_inference" %}',
+            method: 'POST',
+            data: JSON.stringify({}),
+            contentType: 'application/json',
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('推理出错：' + response.error);
+                }
+            },
+            error: function() {
+                alert('请求失败，请重试');
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

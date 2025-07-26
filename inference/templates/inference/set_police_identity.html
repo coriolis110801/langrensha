@@ -1,0 +1,58 @@
+{% extends 'inference/base.html' %}
+
+{% block title %}设置警察身份 - 狼人杀推理助手{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-shield"></i> 设置警察身份
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>说明：</strong>请选择哪两个玩家分别扮演警察A和警察B。这两个玩家会在游戏中声称自己是警察，其中一个是真警察，一个是假警察。
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.police_a.id_for_label }}" class="form-label">警察A（选择玩家）</label>
+                        {{ form.police_a }}
+                        {% if form.police_a.errors %}
+                            <div class="text-danger">{{ form.police_a.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.police_b.id_for_label }}" class="form-label">警察B（选择玩家）</label>
+                        {{ form.police_b }}
+                        {% if form.police_b.errors %}
+                            <div class="text-danger">{{ form.police_b.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 保存设置
+                        </button>
+                        <a href="{% url 'index' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
