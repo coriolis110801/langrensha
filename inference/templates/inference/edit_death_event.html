@@ -1,0 +1,73 @@
+{% extends 'inference/base.html' %}
+
+{% block title %}编辑死亡事件 - 狼人杀推理助手{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-edit"></i> 编辑死亡事件
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.night_number.id_for_label }}" class="form-label">
+                            <strong>第几夜/天：</strong>
+                        </label>
+                        {{ form.night_number }}
+                        {% if form.night_number.errors %}
+                            <div class="text-danger">
+                                {% for error in form.night_number.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.player.id_for_label }}" class="form-label">
+                            <strong>死亡玩家：</strong>
+                        </label>
+                        {{ form.player }}
+                        {% if form.player.errors %}
+                            <div class="text-danger">
+                                {% for error in form.player.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.event_type.id_for_label }}" class="form-label">
+                            <strong>事件类型：</strong>
+                        </label>
+                        {{ form.event_type }}
+                        {% if form.event_type.errors %}
+                            <div class="text-danger">
+                                {% for error in form.event_type.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'index' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 保存修改
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

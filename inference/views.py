@@ -401,3 +401,102 @@ def delete_werewolf_probability(request, adjustment_id):
         messages.error(request, '匪徒概率调整记录不存在！')
     
     return redirect('index')
+
+def edit_judgment(request, judgment_id):
+    """编辑主观判断"""
+    try:
+        judgment = Judgment.objects.get(id=judgment_id)
+    except Judgment.DoesNotExist:
+        messages.error(request, '主观判断记录不存在！')
+        return redirect('index')
+    
+    if request.method == 'POST':
+        form = JudgmentForm(request.POST, instance=judgment)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '主观判断已更新！')
+            return redirect('index')
+    else:
+        form = JudgmentForm(instance=judgment)
+    
+    return render(request, 'inference/edit_judgment.html', {
+        'form': form, 
+        'judgment': judgment
+    })
+
+def delete_judgment(request, judgment_id):
+    """删除主观判断"""
+    try:
+        judgment = Judgment.objects.get(id=judgment_id)
+        judgment.delete()
+        messages.success(request, '主观判断已删除！')
+    except Judgment.DoesNotExist:
+        messages.error(request, '主观判断记录不存在！')
+    
+    return redirect('index')
+
+def edit_night_check(request, check_id):
+    """编辑夜晚查验"""
+    try:
+        check = NightCheck.objects.get(id=check_id)
+    except NightCheck.DoesNotExist:
+        messages.error(request, '夜晚查验记录不存在！')
+        return redirect('index')
+    
+    if request.method == 'POST':
+        form = NightCheckForm(request.POST, instance=check)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '夜晚查验记录已更新！')
+            return redirect('index')
+    else:
+        form = NightCheckForm(instance=check)
+    
+    return render(request, 'inference/edit_night_check.html', {
+        'form': form, 
+        'check': check
+    })
+
+def delete_night_check(request, check_id):
+    """删除夜晚查验"""
+    try:
+        check = NightCheck.objects.get(id=check_id)
+        check.delete()
+        messages.success(request, '夜晚查验记录已删除！')
+    except NightCheck.DoesNotExist:
+        messages.error(request, '夜晚查验记录不存在！')
+    
+    return redirect('index')
+
+def edit_death_event(request, death_id):
+    """编辑死亡事件"""
+    try:
+        death = DeathEvent.objects.get(id=death_id)
+    except DeathEvent.DoesNotExist:
+        messages.error(request, '死亡事件记录不存在！')
+        return redirect('index')
+    
+    if request.method == 'POST':
+        form = DeathEventForm(request.POST, instance=death)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '死亡事件已更新！')
+            return redirect('index')
+    else:
+        form = DeathEventForm(instance=death)
+    
+    return render(request, 'inference/edit_death_event.html', {
+        'form': form, 
+        'death': death
+    })
+
+def delete_death_event(request, death_id):
+    """删除死亡事件"""
+    try:
+        death = DeathEvent.objects.get(id=death_id)
+        death.delete()
+        messages.success(request, '死亡事件已删除！')
+    except DeathEvent.DoesNotExist:
+        messages.error(request, '死亡事件记录不存在！')
+    
+    return redirect('index')
