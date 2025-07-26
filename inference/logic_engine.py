@@ -295,3 +295,38 @@ def get_recommendations(results):
             recommendations.append(f"无论谁是警察，以下玩家都很可疑: {sorted(common_suspects)}")
     
     return recommendations 
+
+def apply_werewolf_probability_adjustments(analysis_result, werewolf_adjustments):
+    """
+    应用匪徒概率调整到分析结果中
+    
+    参数：
+      analysis_result: dict, 包含mafia_probability等分析结果
+      werewolf_adjustments: List of dicts: {"player": int, "probability_increase": float, "reason": str}
+    
+    返回：
+      调整后的分析结果
+    """
+    if not werewolf_adjustments or 'mafia_probability' not in analysis_result:
+        return analysis_result
+    
+    adjusted_result = analysis_result.copy()
+    adjusted_probabilities = adjusted_result['mafia_probability'].copy()
+    
+    for adjustment in werewolf_adjustments:
+        player = adjustment["player"]
+        increase = adjustment["probability_increase"]
+        
+        if player in adjusted_probabilities:
+            # 增加匪徒概率，但不超过100%
+            current_prob = adjusted_probabilities[player]
+            new_prob = min(100.0, current_prob + increase)
+            adjusted_probabilities[player] = new_prob
+            print(f"匪徒概率调整：{player}号从{current_prob}%增加到{new_prob}% (+{increase}%)")
+        else:
+            # 如果该玩家之前没有匪徒概率，设置为调整值
+            adjusted_probabilities[player] = min(100.0, increase)
+            print(f"匪徒概率调整：{player}号设置为{min(100.0, increase)}%")
+    
+    adjusted_result['mafia_probability'] = adjusted_probabilities
+    return adjusted_result 

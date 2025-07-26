@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .models import Player, NightCheck, DeathEvent, Judgment, PoliceIdentity, WerewolfProbabilityAdjustment
 from .forms import NightCheckForm, DeathEventForm, JudgmentForm, PlayerForm, PoliceIdentityForm, WerewolfProbabilityAdjustmentForm
-from .logic_engine import compare_scenarios, analyze_solutions, get_recommendations, compare_scenarios_with_police_identity
+from .logic_engine import compare_scenarios, analyze_solutions, get_recommendations, compare_scenarios_with_police_identity, apply_werewolf_probability_adjustments
 import json
 
 def index(request):
@@ -24,6 +24,7 @@ def index(request):
     checks = []
     deaths = []
     judgments_data = []
+    werewolf_adjustments_data = []
     
     for check in night_checks:
         checks.append({
@@ -44,6 +45,13 @@ def index(request):
             "label": judgment.label
         })
     
+    for adjustment in werewolf_adjustments:
+        werewolf_adjustments_data.append({
+            "player": adjustment.player.number,
+            "probability_increase": float(adjustment.probability_increase),
+            "reason": adjustment.reason
+        })
+    
     # 执行推理 - 需要警察身份信息
     results = {"A": [], "B": []}
     analysis_A = {}
@@ -62,6 +70,12 @@ def index(request):
         # 分析结果
         analysis_A = analyze_solutions(results["A"]) if results["A"] else {}
         analysis_B = analyze_solutions(results["B"]) if results["B"] else {}
+        
+        # 应用匪徒概率调整
+        if werewolf_adjustments_data:
+            print(f"应用匪徒概率调整：{len(werewolf_adjustments_data)}个调整")
+            analysis_A = apply_werewolf_probability_adjustments(analysis_A, werewolf_adjustments_data)
+            analysis_B = apply_werewolf_probability_adjustments(analysis_B, werewolf_adjustments_data)
         
         # 获取建议
         recommendations = get_recommendations(results)
@@ -186,12 +200,14 @@ def ajax_inference(request):
         night_checks = NightCheck.objects.all()
         death_events = DeathEvent.objects.all()
         judgments = Judgment.objects.all()
+        werewolf_adjustments = WerewolfProbabilityAdjustment.objects.all()
         police_identity = PoliceIdentity.objects.first()
         
         # 转换数据格式
         checks = []
         deaths = []
         judgments_data = []
+        werewolf_adjustments_data = []
         
         for check in night_checks:
             checks.append({
@@ -212,6 +228,13 @@ def ajax_inference(request):
                 "label": judgment.label
             })
         
+        for adjustment in werewolf_adjustments:
+            werewolf_adjustments_data.append({
+                "player": adjustment.player.number,
+                "probability_increase": float(adjustment.probability_increase),
+                "reason": adjustment.reason
+            })
+        
         # 执行推理 - 需要警察身份信息
         results = {"A": [], "B": []}
         analysis_A = {}
@@ -230,6 +253,11 @@ def ajax_inference(request):
             # 分析结果
             analysis_A = analyze_solutions(results["A"]) if results["A"] else {}
             analysis_B = analyze_solutions(results["B"]) if results["B"] else {}
+            
+            # 应用匪徒概率调整
+            if werewolf_adjustments_data:
+                analysis_A = apply_werewolf_probability_adjustments(analysis_A, werewolf_adjustments_data)
+                analysis_B = apply_werewolf_probability_adjustments(analysis_B, werewolf_adjustments_data)
             
             # 获取建议
             recommendations = get_recommendations(results)
