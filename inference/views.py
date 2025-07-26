@@ -335,3 +335,69 @@ def add_opposition_group(request):
         form = OppositionGroupForm()
     
     return render(request, 'inference/add_opposition_group.html', {'form': form})
+
+def edit_opposition_group(request, opposition_id):
+    """编辑对立组合"""
+    try:
+        opposition = OppositionGroup.objects.get(id=opposition_id)
+    except OppositionGroup.DoesNotExist:
+        messages.error(request, '对立组合不存在！')
+        return redirect('index')
+    
+    if request.method == 'POST':
+        form = OppositionGroupForm(request.POST, instance=opposition)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '对立组合已更新！')
+            return redirect('index')
+    else:
+        form = OppositionGroupForm(instance=opposition)
+    
+    return render(request, 'inference/edit_opposition_group.html', {
+        'form': form, 
+        'opposition': opposition
+    })
+
+def delete_opposition_group(request, opposition_id):
+    """删除对立组合"""
+    try:
+        opposition = OppositionGroup.objects.get(id=opposition_id)
+        opposition.delete()
+        messages.success(request, '对立组合已删除！')
+    except OppositionGroup.DoesNotExist:
+        messages.error(request, '对立组合不存在！')
+    
+    return redirect('index')
+
+def edit_werewolf_probability(request, adjustment_id):
+    """编辑匪徒概率调整"""
+    try:
+        adjustment = WerewolfProbabilityAdjustment.objects.get(id=adjustment_id)
+    except WerewolfProbabilityAdjustment.DoesNotExist:
+        messages.error(request, '匪徒概率调整记录不存在！')
+        return redirect('index')
+    
+    if request.method == 'POST':
+        form = WerewolfProbabilityAdjustmentForm(request.POST, instance=adjustment)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '匪徒概率调整已更新！')
+            return redirect('index')
+    else:
+        form = WerewolfProbabilityAdjustmentForm(instance=adjustment)
+    
+    return render(request, 'inference/edit_werewolf_probability.html', {
+        'form': form, 
+        'adjustment': adjustment
+    })
+
+def delete_werewolf_probability(request, adjustment_id):
+    """删除匪徒概率调整"""
+    try:
+        adjustment = WerewolfProbabilityAdjustment.objects.get(id=adjustment_id)
+        adjustment.delete()
+        messages.success(request, '匪徒概率调整已删除！')
+    except WerewolfProbabilityAdjustment.DoesNotExist:
+        messages.error(request, '匪徒概率调整记录不存在！')
+    
+    return redirect('index')
