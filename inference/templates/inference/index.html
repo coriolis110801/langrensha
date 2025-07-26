@@ -323,7 +323,6 @@
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>组合名称</th>
                                     <th>对立玩家</th>
                                     <th>原因</th>
                                     <th>时间</th>
@@ -332,11 +331,10 @@
                             <tbody>
                                 {% for group in opposition_groups %}
                                     <tr>
-                                        <td>{{ group.name }}</td>
                                         <td>
-                                            {% for player in group.players.all %}
-                                                <span class="badge bg-secondary me-1">{{ player.number }}号</span>
-                                            {% endfor %}
+                                            <span class="badge bg-secondary me-1">{{ group.player1.number }}号</span>
+                                            <span class="text-muted">vs</span>
+                                            <span class="badge bg-secondary ms-1">{{ group.player2.number }}号</span>
                                         </td>
                                         <td>{{ group.reason|truncatechars:30 }}</td>
                                         <td>{{ group.created_at|date:"m-d H:i" }}</td>

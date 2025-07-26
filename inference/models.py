@@ -113,8 +113,8 @@ class WerewolfProbabilityAdjustment(models.Model):
 
 class OppositionGroup(models.Model):
     """对立组合模型"""
-    name = models.CharField(max_length=100, verbose_name="组合名称")
-    players = models.ManyToManyField(Player, verbose_name="对立玩家")
+    player1 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='opposition_player1', verbose_name="对立玩家1")
+    player2 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='opposition_player2', verbose_name="对立玩家2")
     reason = models.TextField(blank=True, verbose_name="对立原因")
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -122,11 +122,18 @@ class OppositionGroup(models.Model):
         verbose_name = "对立组合"
         verbose_name_plural = "对立组合"
         ordering = ['-created_at']
+        # 确保同一对玩家只能有一个对立组合
+        unique_together = ['player1', 'player2']
     
     def __str__(self):
-        player_numbers = [str(player.number) for player in self.players.all()]
-        return f"{self.name} ({', '.join(player_numbers)}号)"
+        return f"对立玩家{self.player1.number}+对立玩家{self.player2.number}"
     
     def get_player_numbers(self):
         """获取玩家编号列表"""
-        return [player.number for player in self.players.all().order_by('number')]
+        return [self.player1.number, self.player2.number]
+    
+    def clean(self):
+        """验证两个玩家不能相同"""
+        if self.player1 and self.player2 and self.player1 == self.player2:
+            from django.core.exceptions import ValidationError
+            raise ValidationError("两个对立玩家不能是同一个人")

@@ -14,21 +14,27 @@
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="{{ form.name.id_for_label }}" class="form-label">组合名称</label>
-                        {{ form.name }}
-                        {% if form.name.errors %}
-                            <div class="text-danger">{{ form.name.errors }}</div>
-                        {% endif %}
-                        <div class="form-text">给这个对立组合起一个名字，便于识别</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="{{ form.players.id_for_label }}" class="form-label">选择对立玩家</label>
-                        {{ form.players }}
-                        {% if form.players.errors %}
-                            <div class="text-danger">{{ form.players.errors }}</div>
-                        {% endif %}
-                        <div class="form-text">按住Ctrl键可以选择多个玩家，至少选择2个玩家</div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.player1.id_for_label }}" class="form-label">对立玩家1</label>
+                                {{ form.player1 }}
+                                {% if form.player1.errors %}
+                                    <div class="text-danger">{{ form.player1.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">选择第一个对立玩家</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.player2.id_for_label }}" class="form-label">对立玩家2</label>
+                                {{ form.player2 }}
+                                {% if form.player2.errors %}
+                                    <div class="text-danger">{{ form.player2.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">选择第二个对立玩家</div>
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="{{ form.reason.id_for_label }}" class="form-label">对立原因（可选）</label>

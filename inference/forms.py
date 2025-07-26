@@ -122,15 +122,15 @@ class WerewolfProbabilityAdjustmentForm(forms.ModelForm):
 class OppositionGroupForm(forms.ModelForm):
     class Meta:
         model = OppositionGroup
-        fields = ['name', 'players', 'reason']
+        fields = ['player1', 'player2', 'reason']
         widgets = {
-            'name': forms.TextInput(attrs={
+            'player1': forms.Select(attrs={
                 'class': 'form-control',
-                'placeholder': '例如：5号10号对立组合'
+                'placeholder': '选择第一个对立玩家'
             }),
-            'players': forms.SelectMultiple(attrs={
+            'player2': forms.Select(attrs={
                 'class': 'form-control',
-                'size': '8'
+                'placeholder': '选择第二个对立玩家'
             }),
             'reason': forms.Textarea(attrs={
                 'class': 'form-control',
@@ -141,13 +141,18 @@ class OppositionGroupForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # 设置players字段为必填
-        self.fields['players'].required = True
-        # 设置最小选择数量为2
-        self.fields['players'].help_text = "请至少选择2个玩家"
+        # 设置字段为必填
+        self.fields['player1'].required = True
+        self.fields['player2'].required = True
+        self.fields['player1'].empty_label = "请选择第一个玩家"
+        self.fields['player2'].empty_label = "请选择第二个玩家"
     
-    def clean_players(self):
-        players = self.cleaned_data.get('players')
-        if players and len(players) < 2:
-            raise forms.ValidationError("对立组合至少需要2个玩家")
-        return players 
+    def clean(self):
+        cleaned_data = super().clean()
+        player1 = cleaned_data.get('player1')
+        player2 = cleaned_data.get('player2')
+
+        if player1 and player2 and player1 == player2:
+            raise forms.ValidationError("两个对立玩家不能是同一个人！")
+
+        return cleaned_data 
