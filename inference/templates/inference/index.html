@@ -348,6 +348,69 @@
                 {% endif %}
             </div>
         </div>
+
+        <!-- 对立组合阵营分析 -->
+        {% if opposition_analysis %}
+        <div class="card">
+            <div class="card-header {% if opposition_analysis.bipartite_result.is_bipartite %}bg-success text-white{% else %}bg-danger text-white{% endif %}">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-sitemap"></i> 阵营分析
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>分析结果：</strong>
+                    <span class="{% if opposition_analysis.bipartite_result.is_bipartite %}text-success{% else %}text-danger{% endif %}">
+                        {{ opposition_analysis.bipartite_result.message }}
+                    </span>
+                </div>
+                
+                {% if opposition_analysis.bipartite_result.is_bipartite and opposition_analysis.bipartite_result.coloring %}
+                    <div class="mb-3">
+                        <strong>阵营分布：</strong>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title mb-1">阵营A</h6>
+                                        {% for player, color in opposition_analysis.bipartite_result.coloring.items %}
+                                            {% if color == "A" %}
+                                                <span class="badge bg-primary me-1">{{ player }}号</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title mb-1">阵营B</h6>
+                                        {% for player, color in opposition_analysis.bipartite_result.coloring.items %}
+                                            {% if color == "B" %}
+                                                <span class="badge bg-secondary me-1">{{ player }}号</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if opposition_analysis.bipartite_result.conflict %}
+                    <div class="alert alert-danger">
+                        <strong>冲突检测：</strong>
+                        {{ opposition_analysis.bipartite_result.conflict.0 }}号和{{ opposition_analysis.bipartite_result.conflict.1 }}号存在冲突关系
+                    </div>
+                {% endif %}
+                
+                <div class="small text-muted">
+                    <i class="fas fa-info-circle"></i> 
+                    基于图论二分图算法分析，确保所有对立玩家分属不同阵营
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <!-- 右侧：推理结果 -->

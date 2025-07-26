@@ -330,3 +330,130 @@ def apply_werewolf_probability_adjustments(analysis_result, werewolf_adjustments
     
     adjusted_result['mafia_probability'] = adjusted_probabilities
     return adjusted_result 
+
+def check_bipartite_opposition(opposition_groups):
+    """
+    检查对立组合是否可以构成二分图（即玩家可以分成两个阵营）
+    
+    参数：
+      opposition_groups: List of dicts: {"player_a": int, "player_b": int, "reason": str}
+    
+    返回：
+      dict: {
+        "is_bipartite": bool,  # 是否可以分成两个阵营
+        "coloring": dict,      # 染色结果 {player: "A" or "B"}
+        "conflict": tuple,     # 冲突的玩家对 (player1, player2) 或 None
+        "message": str         # 结果说明
+      }
+    """
+    if not opposition_groups:
+        return {
+            "is_bipartite": True,
+            "coloring": {},
+            "conflict": None,
+            "message": "暂无对立组合，无法进行阵营分析"
+        }
+    
+    # 构建图（邻接表）
+    graph = {}
+    for opposition in opposition_groups:
+        player_a = opposition["player_a"]
+        player_b = opposition["player_b"]
+        
+        if player_a not in graph:
+            graph[player_a] = []
+        if player_b not in graph:
+            graph[player_b] = []
+        
+        graph[player_a].append(player_b)
+        graph[player_b].append(player_a)
+    
+    # 二分图染色
+    coloring = {}
+    visited = set()
+    
+    def dfs_coloring(node, color):
+        """DFS染色函数"""
+        if node in coloring:
+            return coloring[node] == color
+        
+        coloring[node] = color
+        visited.add(node)
+        
+        for neighbor in graph.get(node, []):
+            if not dfs_coloring(neighbor, "B" if color == "A" else "A"):
+                return False
+        
+        return True
+    
+    # 尝试染色所有连通分量
+    for node in graph:
+        if node not in visited:
+            if not dfs_coloring(node, "A"):
+                # 找到冲突
+                conflict_node = None
+                for n in graph:
+                    if n in coloring:
+                        for neighbor in graph[n]:
+                            if neighbor in coloring and coloring[n] == coloring[neighbor]:
+                                conflict_node = (n, neighbor)
+                                break
+                        if conflict_node:
+                            break
+                
+                return {
+                    "is_bipartite": False,
+                    "coloring": coloring,
+                    "conflict": conflict_node,
+                    "message": f"无法分成两个阵营！存在冲突：{conflict_node[0]}号和{conflict_node[1]}号既对立又可能同阵营"
+                }
+    
+    # 检查是否所有玩家都被染色
+    all_players = set()
+    for opposition in opposition_groups:
+        all_players.add(opposition["player_a"])
+        all_players.add(opposition["player_b"])
+    
+    uncolored = all_players - set(coloring.keys())
+    
+    if uncolored:
+        return {
+            "is_bipartite": True,
+            "coloring": coloring,
+            "conflict": None,
+            "message": f"可以分成两个阵营，但{len(uncolored)}个玩家未参与对立关系"
+        }
+    
+    # 统计各阵营人数
+    team_a = [p for p, c in coloring.items() if c == "A"]
+    team_b = [p for p, c in coloring.items() if c == "B"]
+    
+    return {
+        "is_bipartite": True,
+        "coloring": coloring,
+        "conflict": None,
+        "message": f"可以分成两个阵营！阵营A({len(team_a)}人): {sorted(team_a)}号, 阵营B({len(team_b)}人): {sorted(team_b)}号"
+    }
+
+def analyze_opposition_camp_analysis(opposition_groups):
+    """
+    分析对立组合的阵营分布
+    
+    参数：
+      opposition_groups: List of dicts: {"player_a": int, "player_b": int, "reason": str}
+    
+    返回：
+      dict: 包含阵营分析结果
+    """
+    bipartite_result = check_bipartite_opposition(opposition_groups)
+    
+    # 构建对立关系图
+    opposition_edges = []
+    for opposition in opposition_groups:
+        opposition_edges.append((opposition["player_a"], opposition["player_b"]))
+    
+    return {
+        "bipartite_result": bipartite_result,
+        "opposition_edges": opposition_edges,
+        "total_oppositions": len(opposition_groups)
+    } 

@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .models import Player, NightCheck, DeathEvent, Judgment, PoliceIdentity, WerewolfProbabilityAdjustment, OppositionGroup
 from .forms import NightCheckForm, DeathEventForm, JudgmentForm, PlayerForm, PoliceIdentityForm, WerewolfProbabilityAdjustmentForm, OppositionGroupForm
-from .logic_engine import compare_scenarios, analyze_solutions, get_recommendations, compare_scenarios_with_police_identity, apply_werewolf_probability_adjustments
+from .logic_engine import compare_scenarios, analyze_solutions, get_recommendations, compare_scenarios_with_police_identity, apply_werewolf_probability_adjustments, analyze_opposition_camp_analysis
 import json
 
 def index(request):
@@ -53,6 +53,18 @@ def index(request):
             "reason": adjustment.reason
         })
     
+    # 对立组合分析
+    opposition_groups_data = []
+    for opposition in opposition_groups:
+        opposition_groups_data.append({
+            "player_a": opposition.player_a.number,
+            "player_b": opposition.player_b.number,
+            "reason": opposition.reason
+        })
+    
+    # 执行对立组合阵营分析
+    opposition_analysis = analyze_opposition_camp_analysis(opposition_groups_data)
+    
     # 执行推理 - 需要警察身份信息
     results = {"A": [], "B": []}
     analysis_A = {}
@@ -88,6 +100,7 @@ def index(request):
         'judgments': judgments,
         'werewolf_adjustments': werewolf_adjustments,
         'opposition_groups': opposition_groups,
+        'opposition_analysis': opposition_analysis,
         'police_identity': police_identity,
         'results': results,
         'analysis_A': analysis_A,
