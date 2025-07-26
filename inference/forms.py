@@ -122,37 +122,32 @@ class WerewolfProbabilityAdjustmentForm(forms.ModelForm):
 class OppositionGroupForm(forms.ModelForm):
     class Meta:
         model = OppositionGroup
-        fields = ['player1', 'player2', 'reason']
+        fields = ['player_a', 'player_b', 'reason']
         widgets = {
-            'player1': forms.Select(attrs={
-                'class': 'form-control',
-                'placeholder': '选择第一个对立玩家'
-            }),
-            'player2': forms.Select(attrs={
-                'class': 'form-control',
-                'placeholder': '选择第二个对立玩家'
-            }),
+            'player_a': forms.Select(attrs={'class': 'form-control'}),
+            'player_b': forms.Select(attrs={'class': 'form-control'}),
             'reason': forms.Textarea(attrs={
-                'class': 'form-control',
+                'class': 'form-control', 
                 'rows': 3,
-                'placeholder': '请说明这些玩家为什么是对立的（可选）'
+                'placeholder': '请详细说明为什么认为这两个玩家是对立面'
             }),
         }
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # 设置字段为必填
-        self.fields['player1'].required = True
-        self.fields['player2'].required = True
-        self.fields['player1'].empty_label = "请选择第一个玩家"
-        self.fields['player2'].empty_label = "请选择第二个玩家"
-    
     def clean(self):
         cleaned_data = super().clean()
-        player1 = cleaned_data.get('player1')
-        player2 = cleaned_data.get('player2')
-
-        if player1 and player2 and player1 == player2:
-            raise forms.ValidationError("两个对立玩家不能是同一个人！")
-
+        player_a = cleaned_data.get('player_a')
+        player_b = cleaned_data.get('player_b')
+        
+        if player_a and player_b and player_a == player_b:
+            raise forms.ValidationError("不能选择同一个玩家作为对立面！")
+        
+        # 检查是否已经存在相同的对立组合
+        if player_a and player_b:
+            # 确保player_a的编号小于player_b
+            if player_a.number > player_b.number:
+                player_a, player_b = player_b, player_a
+            
+            if OppositionGroup.objects.filter(player_a=player_a, player_b=player_b).exists():
+                raise forms.ValidationError("这对玩家已经存在对立关系！")
+        
         return cleaned_data 

@@ -43,11 +43,6 @@ class WerewolfProbabilityAdjustmentAdmin(admin.ModelAdmin):
 
 @admin.register(OppositionGroup)
 class OppositionGroupAdmin(admin.ModelAdmin):
-    list_display = ['get_opposition_players', 'reason', 'created_at']
-    list_filter = ['created_at']
-    search_fields = ['reason', 'player1__number', 'player1__nickname', 'player2__number', 'player2__nickname']
+    list_display = ['player_a', 'player_b', 'reason', 'created_at']
+    search_fields = ['player_a__number', 'player_a__nickname', 'player_b__number', 'player_b__nickname', 'reason']
     ordering = ['-created_at']
-    
-    def get_opposition_players(self, obj):
-        return f"{obj.player1.number}号 vs {obj.player2.number}号"
-    get_opposition_players.short_description = "对立玩家"

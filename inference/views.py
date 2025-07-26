@@ -311,7 +311,7 @@ def add_werewolf_probability(request):
     return render(request, 'inference/add_werewolf_probability.html', {'form': form})
 
 def add_opposition_group(request):
-    """添加对立组合"""
+    """设置对立组合"""
     if request.method == 'POST':
         form = OppositionGroupForm(request.POST)
         if form.is_valid():

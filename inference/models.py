@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 
@@ -112,28 +113,29 @@ class WerewolfProbabilityAdjustment(models.Model):
         return f"{self.player}增加匪徒概率{self.probability_increase}% - {self.reason[:20]}..."
 
 class OppositionGroup(models.Model):
-    """对立组合模型"""
-    player1 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='opposition_player1', verbose_name="对立玩家1")
-    player2 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='opposition_player2', verbose_name="对立玩家2")
-    reason = models.TextField(blank=True, verbose_name="对立原因")
+    """对立组合记录"""
+    player_a = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='opposition_as_a', verbose_name="玩家A")
+    player_b = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='opposition_as_b', verbose_name="玩家B")
+    reason = models.TextField(verbose_name="对立原因")
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         verbose_name = "对立组合"
         verbose_name_plural = "对立组合"
         ordering = ['-created_at']
-        # 确保同一对玩家只能有一个对立组合
-        unique_together = ['player1', 'player2']
+        # 确保同一对玩家不会重复添加
+        unique_together = ['player_a', 'player_b']
     
     def __str__(self):
-        return f"对立玩家{self.player1.number}+对立玩家{self.player2.number}"
-    
-    def get_player_numbers(self):
-        """获取玩家编号列表"""
-        return [self.player1.number, self.player2.number]
+        return f"{self.player_a} vs {self.player_b} - {self.reason[:20]}..."
     
     def clean(self):
-        """验证两个玩家不能相同"""
-        if self.player1 and self.player2 and self.player1 == self.player2:
-            from django.core.exceptions import ValidationError
-            raise ValidationError("两个对立玩家不能是同一个人")
+        """验证玩家不能和自己对立"""
+        if self.player_a == self.player_b:
+            raise ValidationError("玩家不能和自己对立！")
+    
+    def save(self, *args, **kwargs):
+        """确保player_a的编号总是小于player_b的编号，避免重复"""
+        if self.player_a.number > self.player_b.number:
+            self.player_a, self.player_b = self.player_b, self.player_a
+        super().save(*args, **kwargs)

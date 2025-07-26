@@ -55,7 +55,7 @@
                     </div>
                     <div class="col-md-3">
                         <a href="{% url 'add_opposition_group' %}" class="btn btn-secondary w-100 mb-2">
-                            <i class="fas fa-users-slash"></i> 对立组合
+                            <i class="fas fa-balance-scale"></i> 设置对立组合
                         </a>
                     </div>
                     <div class="col-md-3">
@@ -314,7 +314,7 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="fas fa-users-slash"></i> 对立组合
+                    <i class="fas fa-balance-scale"></i> 对立组合
                 </h5>
             </div>
             <div class="card-body">
@@ -324,20 +324,20 @@
                             <thead>
                                 <tr>
                                     <th>对立玩家</th>
-                                    <th>原因</th>
+                                    <th>对立原因</th>
                                     <th>时间</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for group in opposition_groups %}
+                                {% for opposition in opposition_groups %}
                                     <tr>
                                         <td>
-                                            <span class="badge bg-secondary me-1">{{ group.player1.number }}号</span>
-                                            <span class="text-muted">vs</span>
-                                            <span class="badge bg-secondary ms-1">{{ group.player2.number }}号</span>
+                                            <span class="badge bg-info">{{ opposition.player_a.number }}号</span>
+                                            <i class="fas fa-arrows-alt-h text-muted mx-2"></i>
+                                            <span class="badge bg-info">{{ opposition.player_b.number }}号</span>
                                         </td>
-                                        <td>{{ group.reason|truncatechars:30 }}</td>
-                                        <td>{{ group.created_at|date:"m-d H:i" }}</td>
+                                        <td>{{ opposition.reason|truncatechars:40 }}</td>
+                                        <td>{{ opposition.created_at|date:"m-d H:i" }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
