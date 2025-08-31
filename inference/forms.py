@@ -1,5 +1,5 @@
 from django import forms
-from .models import NightCheck, DeathEvent, Judgment, Player, PoliceIdentity, WerewolfProbabilityAdjustment, OppositionGroup
+from .models import NightCheck, DeathEvent, Judgment, Player, PoliceIdentity, WerewolfProbabilityAdjustment, OppositionGroup, GameplayGuide
 
 class NightCheckForm(forms.ModelForm):
     class Meta:
@@ -151,3 +151,23 @@ class OppositionGroupForm(forms.ModelForm):
                 raise forms.ValidationError("这对玩家已经存在对立关系！")
         
         return cleaned_data 
+
+class GameplayGuideForm(forms.ModelForm):
+    class Meta:
+        model = GameplayGuide
+        fields = ['role', 'title', 'content']
+        widgets = {
+            'role': forms.Select(attrs={
+                'class': 'form-control',
+                'placeholder': '选择角色'
+            }),
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '请输入标题'
+            }),
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 6,
+                'placeholder': '请输入玩法思路内容'
+            }),
+        }

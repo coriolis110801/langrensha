@@ -3,8 +3,8 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .models import Player, NightCheck, DeathEvent, Judgment, PoliceIdentity, WerewolfProbabilityAdjustment, OppositionGroup
-from .forms import NightCheckForm, DeathEventForm, JudgmentForm, PlayerForm, PoliceIdentityForm, WerewolfProbabilityAdjustmentForm, OppositionGroupForm
+from .models import Player, NightCheck, DeathEvent, Judgment, PoliceIdentity, WerewolfProbabilityAdjustment, OppositionGroup, GameplayGuide
+from .forms import NightCheckForm, DeathEventForm, JudgmentForm, PlayerForm, PoliceIdentityForm, WerewolfProbabilityAdjustmentForm, OppositionGroupForm, GameplayGuideForm
 from .logic_engine import compare_scenarios, analyze_solutions, get_recommendations, compare_scenarios_with_police_identity, apply_werewolf_probability_adjustments, analyze_opposition_camp_analysis
 import json
 
@@ -500,3 +500,68 @@ def delete_death_event(request, death_id):
         messages.error(request, '死亡事件记录不存在！')
     
     return redirect('index')
+
+def gameplay_guide(request):
+    """玩法思路页面"""
+    # 获取所有玩法思路，按角色分组
+    guides = GameplayGuide.objects.all()
+    
+    # 按角色分组
+    police_guides = guides.filter(role='police')
+    villager_guides = guides.filter(role='villager')
+    mafia_guides = guides.filter(role='mafia')
+    
+    context = {
+        'police_guides': police_guides,
+        'villager_guides': villager_guides,
+        'mafia_guides': mafia_guides,
+        'total_guides': guides.count(),
+    }
+    
+    return render(request, 'inference/gameplay_guide.html', context)
+
+def add_gameplay_guide(request):
+    """添加玩法思路"""
+    if request.method == 'POST':
+        form = GameplayGuideForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '玩法思路添加成功！')
+            return redirect('gameplay_guide')
+    else:
+        form = GameplayGuideForm()
+    
+    return render(request, 'inference/add_gameplay_guide.html', {'form': form})
+
+def edit_gameplay_guide(request, guide_id):
+    """编辑玩法思路"""
+    try:
+        guide = GameplayGuide.objects.get(id=guide_id)
+    except GameplayGuide.DoesNotExist:
+        messages.error(request, '玩法思路不存在！')
+        return redirect('gameplay_guide')
+    
+    if request.method == 'POST':
+        form = GameplayGuideForm(request.POST, instance=guide)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '玩法思路已更新！')
+            return redirect('gameplay_guide')
+    else:
+        form = GameplayGuideForm(instance=guide)
+    
+    return render(request, 'inference/edit_gameplay_guide.html', {
+        'form': form, 
+        'guide': guide
+    })
+
+def delete_gameplay_guide(request, guide_id):
+    """删除玩法思路"""
+    try:
+        guide = GameplayGuide.objects.get(id=guide_id)
+        guide.delete()
+        messages.success(request, '玩法思路已删除！')
+    except GameplayGuide.DoesNotExist:
+        messages.error(request, '玩法思路不存在！')
+    
+    return redirect('gameplay_guide')

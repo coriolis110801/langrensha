@@ -139,3 +139,25 @@ class OppositionGroup(models.Model):
         if self.player_a.number > self.player_b.number:
             self.player_a, self.player_b = self.player_b, self.player_a
         super().save(*args, **kwargs)
+
+class GameplayGuide(models.Model):
+    """玩法思路记录"""
+    ROLE_CHOICES = [
+        ('police', '预言家'),
+        ('villager', '平民'),
+        ('mafia', '狼人'),
+    ]
+    
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, verbose_name="角色")
+    title = models.CharField(max_length=100, verbose_name="标题")
+    content = models.TextField(verbose_name="内容")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    
+    class Meta:
+        verbose_name = "玩法思路"
+        verbose_name_plural = "玩法思路"
+        ordering = ['role', '-created_at']
+    
+    def __str__(self):
+        return f"{self.get_role_display()} - {self.title}"

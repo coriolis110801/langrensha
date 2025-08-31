@@ -23,4 +23,8 @@ urlpatterns = [
     path('delete-opposition-group/<int:opposition_id>/', views.delete_opposition_group, name='delete_opposition_group'),
     path('ajax-inference/', views.ajax_inference, name='ajax_inference'),
     path('initialize-and-clear-data/', views.initialize_and_clear_data, name='initialize_and_clear_data'),
+    path('gameplay-guide/', views.gameplay_guide, name='gameplay_guide'),
+    path('add-gameplay-guide/', views.add_gameplay_guide, name='add_gameplay_guide'),
+    path('edit-gameplay-guide/<int:guide_id>/', views.edit_gameplay_guide, name='edit_gameplay_guide'),
+    path('delete-gameplay-guide/<int:guide_id>/', views.delete_gameplay_guide, name='delete_gameplay_guide'),
 ] 

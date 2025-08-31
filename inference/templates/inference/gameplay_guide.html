@@ -1,0 +1,143 @@
+{% extends 'inference/base.html' %}
+
+{% block title %}玩法思路 - 狼人杀推理助手{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="card-title mb-0">
+                        <i class="fas fa-lightbulb"></i> 狼人杀玩法思路
+                    </h2>
+                    <a href="{% url 'add_gameplay_guide' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus"></i> 添加玩法思路
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle"></i> 使用说明</h5>
+                    <p>在这里你可以添加和管理不同角色的玩法思路，包括预言家、平民和狼人的策略技巧。</p>
+                    <p><strong>当前共有 {{ total_guides }} 条自定义玩法思路</strong></p>
+                </div>
+
+                <!-- 玩法思路列表 -->
+                {% if total_guides > 0 %}
+                    
+                    <!-- 预言家思路 -->
+                    {% if police_guides %}
+                    <div class="mb-3">
+                        <h5><i class="fas fa-user-shield text-primary"></i> 预言家思路 ({{ police_guides.count }}条)</h5>
+                        <div class="row">
+                            {% for guide in police_guides %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-primary">
+                                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ guide.title }}</h6>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'edit_gameplay_guide' guide.id %}" class="btn btn-light btn-sm" title="编辑">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'delete_gameplay_guide' guide.id %}" class="btn btn-light btn-sm" title="删除" 
+                                               onclick="return confirm('确定要删除这个玩法思路吗？')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ guide.content|linebreaks }}</p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock"></i> {{ guide.created_at|date:"Y-m-d H:i" }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 平民思路 -->
+                    {% if villager_guides %}
+                    <div class="mb-3">
+                        <h5><i class="fas fa-user text-success"></i> 平民思路 ({{ villager_guides.count }}条)</h5>
+                        <div class="row">
+                            {% for guide in villager_guides %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ guide.title }}</h6>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'edit_gameplay_guide' guide.id %}" class="btn btn-light btn-sm" title="编辑">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'delete_gameplay_guide' guide.id %}" class="btn btn-light btn-sm" title="删除" 
+                                               onclick="return confirm('确定要删除这个玩法思路吗？')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ guide.content|linebreaks }}</p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock"></i> {{ guide.created_at|date:"Y-m-d H:i" }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 狼人思路 -->
+                    {% if mafia_guides %}
+                    <div class="mb-3">
+                        <h5><i class="fas fa-user-ninja text-danger"></i> 狼人思路 ({{ mafia_guides.count }}条)</h5>
+                        <div class="row">
+                            {% for guide in mafia_guides %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-danger">
+                                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ guide.title }}</h6>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'edit_gameplay_guide' guide.id %}" class="btn btn-light btn-sm" title="编辑">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'delete_gameplay_guide' guide.id %}" class="btn btn-light btn-sm" title="删除" 
+                                               onclick="return confirm('确定要删除这个玩法思路吗？')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ guide.content|linebreaks }}</p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock"></i> {{ guide.created_at|date:"Y-m-d H:i" }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="mb-4">
+                    <div class="alert alert-warning text-center">
+                        <h5><i class="fas fa-info-circle"></i> 暂无自定义玩法思路</h5>
+                        <p>点击右上角的"添加玩法思路"按钮来创建你的第一个玩法思路吧！</p>
+                        <a href="{% url 'add_gameplay_guide' %}" class="btn btn-warning">
+                            <i class="fas fa-plus"></i> 添加玩法思路
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
