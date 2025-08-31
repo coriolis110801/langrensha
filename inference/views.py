@@ -510,11 +510,15 @@ def gameplay_guide(request):
     police_guides = guides.filter(role='police')
     villager_guides = guides.filter(role='villager')
     mafia_guides = guides.filter(role='mafia')
+    witch_guides = guides.filter(role='witch')
+    guard_guides = guides.filter(role='guard')
     
     context = {
         'police_guides': police_guides,
         'villager_guides': villager_guides,
         'mafia_guides': mafia_guides,
+        'witch_guides': witch_guides,
+        'guard_guides': guard_guides,
         'total_guides': guides.count(),
     }
     

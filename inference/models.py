@@ -146,6 +146,8 @@ class GameplayGuide(models.Model):
         ('police', '预言家'),
         ('villager', '平民'),
         ('mafia', '狼人'),
+        ('witch', '女巫'),
+        ('guard', '守卫'),
     ]
     
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, verbose_name="角色")
